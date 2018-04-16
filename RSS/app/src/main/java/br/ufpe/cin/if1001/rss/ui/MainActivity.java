@@ -1,6 +1,5 @@
-package br.ufpe.cin.if1001.rss;
-
-import android.app.Activity;
+package br.ufpe.cin.if1001.rss.ui;
+import br.ufpe.cin.if1001.rss.R;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,18 +12,27 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import org.xmlpull.v1.XmlPullParserException;
+
 import android.content.SharedPreferences;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
+import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+import br.ufpe.cin.if1001.rss.util.CustomAdapter;
+import br.ufpe.cin.if1001.rss.util.ParserRSS;
 
 public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
+    private SQLiteRSSHelper banco;
+    private List<ItemRSS> parsedResponse;
 
     //ao fazer envio da resolucao, use este link no seu codigo!
     //private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
@@ -47,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        banco = SQLiteRSSHelper.getInstance(this);
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
         //adição da tollbar
@@ -80,54 +89,75 @@ public class MainActivity extends AppCompatActivity {
         new CarregaRSStask().execute(url);
     }
 
-    private class CarregaRSStask extends AsyncTask<String, Void, String> {
-        @Override
-        protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "iniciando...", Toast.LENGTH_SHORT).show();
-        }
+    @Override
+    protected void onDestroy() {
+        banco.close();
+        super.onDestroy();
+    }
+
+    private class CarregaRSStask extends AsyncTask<String, Void, Boolean> {
 
         @Override
-        protected String doInBackground(String... params) {
-            String conteudo = "provavelmente deu erro...";
+        protected Boolean doInBackground(String... mudancas) {
+            boolean problema = false;
+            List<ItemRSS> items = null;
             try {
-                conteudo = getRssFeed(params[0]);
+                String feed = getRssFeed(mudancas[0]);
+                items = ParserRSS.parse(feed);
+                for (ItemRSS i : items) {
+                    Log.d("banco", "Buscar no Banco por link: " + i.getLink());
+                    ItemRSS item = banco.getItemRSS(i.getLink());
+                    if (item == null) {
+                        Log.d("banco", "Encontrado pela primeira vez: " + i.getTitle());
+                        banco.insertItem(i);
+                    }
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            return conteudo;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
-
-            //ajuste para usar uma ListView
-            //o layout XML a ser utilizado esta em res/layout/itemlista.xml
-            try {
-                //ParserLoad=ParserRSS.parserSimples(s);
-                Log.i("conteudo", s);
-                //carregando a lista usando o parser
-                Listresult = ParserRSS.parse(s);
-                //conteudoRSS.setAdapter(new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, ParserLoad));
-                //conteudoRSS.setAdapter(new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, Listresult));
-                //criação do custom adapter para lidar com as especificaçoes do exercicio.
-                final CustomAdapter CustomAdapter = new CustomAdapter(getApplicationContext(), Listresult);
-                conteudoRSS.setAdapter(CustomAdapter);
-                conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                   @Override
-                   public void onItemClick(AdapterView<?> adapterView, View view, int position, long arg) {
-                       String url = CustomAdapter.getLink(position);
-                       Intent intent = new Intent(Intent.ACTION_VIEW);
-                       intent.setData(Uri.parse(url));
-                       startActivity(intent);
-                   }
-                });
-
-
+                problema = true;
             } catch (XmlPullParserException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                problema = true;
+            }
+            return problema;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean problemaConfirmado) {
+            if (problemaConfirmado) {
+                Toast.makeText(MainActivity.this, "Teve algum problema ao carregar o feed.", Toast.LENGTH_SHORT).show();
+            } else {
+                //dispara o task que exibe a lista
+                new mostrarFeed().execute();
+            }
+        }
+    }
+
+    private class mostrarFeed extends AsyncTask<Void, Void, List<ItemRSS>> {
+
+        @Override
+        protected List<ItemRSS> doInBackground(Void... voids) {
+            parsedResponse =  banco.getItems();
+            return parsedResponse;
+        }
+
+        @Override
+        protected void onPostExecute(List<ItemRSS> rssList) {
+            if (rssList != null) {
+                final CustomAdapter customAdapterRss = new CustomAdapter(getApplicationContext(), rssList);
+                conteudoRSS.setAdapter(customAdapterRss);
+                conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int position, long arg) {
+                        String url = customAdapterRss.getLink(position);
+                        if (banco.markAsRead(url)) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(Uri.parse(url));
+                            startActivity(intent);
+                        }
+                    }
+                });
             }
         }
     }
@@ -154,9 +184,11 @@ public class MainActivity extends AppCompatActivity {
         }
         return rssFeed;
     }
+
     //mudança do feed
-    public void mudarFeed(View view){
-        Intent intent = new Intent(this,PreferenciasActivity.class);
+    public void mudarFeed(View view) {
+        Intent intent = new Intent(this, PreferenciasActivity.class);
         startActivity(intent);
     }
 }
+

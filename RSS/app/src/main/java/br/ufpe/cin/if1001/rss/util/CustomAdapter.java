@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss;
+package br.ufpe.cin.if1001.rss.util;
 
 /**
  * Created by LERISSON on 02/04/2018.
@@ -16,7 +16,10 @@ import android.widget.TextView;
 
 import java.util.List;
 
-class CustomAdapter extends BaseAdapter{
+import br.ufpe.cin.if1001.rss.R;
+import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+
+public class CustomAdapter extends BaseAdapter{
     //private List<ItemRSS> itens;
     Context contexto;
     List<ItemRSS> itens;

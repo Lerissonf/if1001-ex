@@ -1,4 +1,4 @@
-package br.ufpe.cin.if1001.rss;
+package br.ufpe.cin.if1001.rss.util;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -9,47 +9,11 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+
 public class ParserRSS {
 
-    //Testar primeiro com o parser simples para exibir lista de titulos - sem informacao de link
-    public static List<String> parserSimples(String rssFeed) throws XmlPullParserException, IOException {
-        // pegando instancia da XmlPullParserFactory [singleton]
-        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-        // criando novo objeto do tipo XmlPullParser
-        XmlPullParser parser = factory.newPullParser();
-        // Definindo a entrada do nosso parser - argumento passado como parametro
-        parser.setInput(new StringReader(rssFeed));
-        // Definindo retorno
-        List<String> items = new ArrayList<String>();
-
-        while (parser.next() != XmlPullParser.END_DOCUMENT) {
-            if (parser.getEventType() == XmlPullParser.START_TAG) {
-                String tag = parser.getName();
-                //delimitando que estamos apenas interessados em tags <item>
-                if (tag.equals("item")) {
-                    String title = "";
-                    while (parser.next() != XmlPullParser.END_TAG) {
-                        if (parser.getEventType() == XmlPullParser.START_TAG) {
-                            String tagAberta = parser.getName();
-                            //pegando as tags <title>
-                            if (tagAberta.equals("title")) {
-                                title = parser.nextText();
-                                items.add(title);
-                            } else {
-                                parser.next();
-                            }
-                            parser.nextTag();
-                        }
-                    }
-                }
-            }
-        }
-        return items;
-    }
-
-
     //Este metodo faz o parsing de RSS gerando objetos ItemRSS
-
     public static List<ItemRSS> parse(String rssFeed) throws XmlPullParserException, IOException {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         XmlPullParser xpp = factory.newPullParser();
@@ -157,6 +121,41 @@ public class ParserRSS {
         }
     }
 
-     /**/
+    //parser simples para exibir lista de titulos - sem informacao de link
+    public static List<String> parserSimples(String rssFeed) throws XmlPullParserException, IOException {
+        // pegando instancia da XmlPullParserFactory [singleton]
+        XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+        // criando novo objeto do tipo XmlPullParser
+        XmlPullParser parser = factory.newPullParser();
+        // Definindo a entrada do nosso parser - argumento passado como parametro
+        parser.setInput(new StringReader(rssFeed));
+        // Definindo retorno
+        List<String> items = new ArrayList<String>();
+
+        while (parser.next() != XmlPullParser.END_DOCUMENT) {
+            if (parser.getEventType() == XmlPullParser.START_TAG) {
+                String tag = parser.getName();
+                //delimitando que estamos apenas interessados em tags <item>
+                if (tag.equals("item")) {
+                    String title = "";
+                    while (parser.next() != XmlPullParser.END_TAG) {
+                        if (parser.getEventType() == XmlPullParser.START_TAG) {
+                            String tagAberta = parser.getName();
+                            //pegando as tags <title>
+                            if (tagAberta.equals("title")) {
+                                title = parser.nextText();
+                                items.add(title);
+                            } else {
+                                parser.next();
+                            }
+                            parser.nextTag();
+                        }
+                    }
+                }
+            }
+        }
+        return items;
+    }
+
 
 }

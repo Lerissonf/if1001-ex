@@ -14,7 +14,7 @@ Para entregar o exercício, responda o [formulário de entrega](https://docs.goo
   8. Modifique a aplicação para que passe a carregar o endereço do feed a partir de uma `SharedPreferences` com a chave `rssfeed`. O endereço padrão para o feed está disponível em res/values/strings.xml.
   9. Inclua a possibilidade de alterar a `SharedPreference` (`rssfeed`) incluindo um botão na `ActionBar` da aplicação. Ao clicar no botão, abra `PreferenciasActivity`, que deve exibir uma `PreferenceScreen` gerada automaticamente por meio de um `Fragment` que estende a classe `PreferenceFragment`, como visto em sala. Use o arquivo em `res/xml/preferencias.xml` para definir a tela.
 
-  
+
 
 # Tarefa #2 - RSS 
 
@@ -60,8 +60,8 @@ Para entregar o exercício, responda o [formulário de entrega](https://docs.goo
 | 7 | **sim** |
 | 8 | **sim** |
 | 9 | **sim** |
-| 10 | **não** |
-| 11 | **não** |
+| 10 | **sim** |
+| 11 | **sim** |
 | 12 | **não** |
 | 13 | **não** |
 | 14 | **não** |

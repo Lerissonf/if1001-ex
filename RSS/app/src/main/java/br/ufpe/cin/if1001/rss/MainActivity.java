@@ -1,14 +1,18 @@
 package br.ufpe.cin.if1001.rss;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import org.xmlpull.v1.XmlPullParserException;
-
+import android.content.SharedPreferences;
+import android.content.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +21,11 @@ import java.net.URL;
 import java.util.List;
 
 public class MainActivity extends Activity {
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     //ao fazer envio da resolucao, use este link no seu codigo!
-    private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
+    //private final String RSS_FEED = "http://leopoldomt.com/if1001/g1brasil.xml";
     private ListView conteudoRSS;
     // variável usada na leitura do xml
     private List<String> ParserLoad;
@@ -34,7 +40,7 @@ public class MainActivity extends Activity {
 
     //use ListView ao invés de TextView - deixe o atributo com o mesmo nome
 
-
+    // definição
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,12 +48,22 @@ public class MainActivity extends Activity {
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
+        sharedPreferences = getSharedPreferences(getString(R.string.rss_feed), Context.MODE_PRIVATE);
+               editor = sharedPreferences.edit();
+                if (getString(R.string.rss_feed_link).equals("default")){
+                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_default));
+                    } else {
+                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_link));
+                    }
+                editor.apply();
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        new CarregaRSStask().execute(RSS_FEED);
+        //new CarregaRSStask().execute(RSS_FEED);
+        new CarregaRSStask().execute(sharedPreferences.getString(getString(R.string.rss_feed),getString(R.string.rss_feed_default)));
     }
 
     private class CarregaRSStask extends AsyncTask<String, Void, String> {
@@ -81,7 +97,17 @@ public class MainActivity extends Activity {
                 //conteudoRSS.setAdapter(new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, ParserLoad));
                 //conteudoRSS.setAdapter(new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, Listresult));
                 //criação do custom adapter para lidar com as especificaçoes do exercicio.
-                conteudoRSS.setAdapter(new CustomAdapter(getApplicationContext(),Listresult));
+                final CustomAdapter CustomAdapter = new CustomAdapter(getApplicationContext(), Listresult);
+                conteudoRSS.setAdapter(CustomAdapter);
+                conteudoRSS.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                   @Override
+                   public void onItemClick(AdapterView<?> adapterView, View view, int position, long arg) {
+                       String url = CustomAdapter.getLink(position);
+                       Intent intent = new Intent(Intent.ACTION_VIEW);
+                       intent.setData(Uri.parse(url));
+                       startActivity(intent);
+                   }
+                });
 
 
             } catch (XmlPullParserException e) {

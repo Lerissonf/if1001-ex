@@ -58,29 +58,22 @@ class CustomAdapter extends BaseAdapter{
         //Buscando a referência ao TextView para inserirmos a data do item
         TextView itemData = (TextView) v.findViewById(R.id.item_data);
 
-        LinearLayout linearLayout = (LinearLayout) v.findViewById(R.id.list);
-
-        linearLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent it = new Intent(contexto, WebViewActivity.class);
-                it.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                contexto.startActivity(it);
-            }
-        });
+//
 
        //get para retornar os titulos e as datas]
         Log.d("lerisson","ITEM -> "+i);
         String data = itens.get(i).getPubDate();
         String titulo = itens.get(i).getTitle();
-
-
+        //itens.get(i).getLink();
         //Efetivamente setando o data e titulo na View
         itemData.setText(data);
         itemTitulo.setText(titulo);
         return v;
     }
+    public String getLink(int position){
 
+             return itens.get(position).getLink();
+    }
 
 
 }

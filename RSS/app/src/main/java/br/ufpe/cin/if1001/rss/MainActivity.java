@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,7 +15,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 import org.xmlpull.v1.XmlPullParserException;
 import android.content.SharedPreferences;
-import android.content.Context;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +22,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
 
@@ -47,23 +49,35 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
+        //adição da tollbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.rss_toolbar);
+        setSupportActionBar(toolbar);
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
-        sharedPreferences = getSharedPreferences(getString(R.string.rss_feed), Context.MODE_PRIVATE);
-               editor = sharedPreferences.edit();
-                if (getString(R.string.rss_feed_link).equals("default")){
-                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_default));
-                    } else {
-                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_link));
-                    }
-                editor.apply();
+        //impliementação do sharedPreferences
+//        sharedPreferences = getSharedPreferences(getString(R.string.rss_feed), Context.MODE_PRIVATE);
+//               editor = sharedPreferences.edit();
+//                if (getString(R.string.rss_feed_link).equals("default")){
+//                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_default));
+//                    } else {
+//                        editor.putString(getString(R.string.rss_feed), getString(R.string.rss_feed_link));
+//                    }
+//                editor.apply();
+        //carregando as preferencias do arquivo xml
+        PreferenceManager.setDefaultValues(this, R.xml.preferencias, false);
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        //carregamento default
         //new CarregaRSStask().execute(RSS_FEED);
-        new CarregaRSStask().execute(sharedPreferences.getString(getString(R.string.rss_feed),getString(R.string.rss_feed_default)));
+        //sharedPreference
+        //new CarregaRSStask().execute(sharedPreferences.getString(getString(R.string.rss_feed),getString(R.string.rss_feed_default)));
+        //mudança do usuario atraves de settings
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String url = sharedPreferences.getString(PreferenciasActivity.KEY_PREF_RSS_FEED, "");
+        new CarregaRSStask().execute(url);
     }
 
     private class CarregaRSStask extends AsyncTask<String, Void, String> {
@@ -139,5 +153,10 @@ public class MainActivity extends Activity {
             }
         }
         return rssFeed;
+    }
+    //mudança do feed
+    public void mudarFeed(View view){
+        Intent intent = new Intent(this,PreferenciasActivity.class);
+        startActivity(intent);
     }
 }

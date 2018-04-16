@@ -4,7 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="br.ufpe.cin.if1001.rss.MainActivity">
+
+    <include
+        android:id="@+id/rss_toolbar"
+        layout="@layout/app_bar" />
+
     <ListView
         android:id="@+id/conteudoRSS"
         android:layout_width="match_parent"

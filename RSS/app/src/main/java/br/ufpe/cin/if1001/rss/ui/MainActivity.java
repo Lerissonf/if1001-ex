@@ -1,32 +1,30 @@
 package br.ufpe.cin.if1001.rss.ui;
 import br.ufpe.cin.if1001.rss.R;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.xmlpull.v1.XmlPullParserException;
-
 import android.content.SharedPreferences;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
+import br.ufpe.cin.if1001.rss.ServiceTest.DownloadXmlRssService;
 import br.ufpe.cin.if1001.rss.util.CustomAdapter;
-import br.ufpe.cin.if1001.rss.util.ParserRSS;
 
 public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
@@ -40,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     // variável usada na leitura do xml
     private List<String> ParserLoad;
     private List<ItemRSS> Listresult;
-
+    private String aux;
 
     //OUTROS LINKS PARA TESTAR...
     //http://rss.cnn.com/rss/edition.rss
@@ -62,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.rss_toolbar);
         setSupportActionBar(toolbar);
         conteudoRSS = (ListView) findViewById(R.id.conteudoRSS);
-        //impliementação do sharedPreferences
+        //implementação do sharedPreferences
 //        sharedPreferences = getSharedPreferences(getString(R.string.rss_feed), Context.MODE_PRIVATE);
 //               editor = sharedPreferences.edit();
 //                if (getString(R.string.rss_feed_link).equals("default")){
@@ -86,53 +84,89 @@ public class MainActivity extends AppCompatActivity {
         //mudança do usuario atraves de settings
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String url = sharedPreferences.getString(PreferenciasActivity.KEY_PREF_RSS_FEED, "");
-        new CarregaRSStask().execute(url);
+        if(aux == null){
+            aux = url;
+        }
+        if(aux != url){
+            banco = SQLiteRSSHelper.getInstance(this);
+            aux = url;
+        }
+
+//        new CarregaRSStask().execute(url);
+        //Criar intent para iniciar o servico de download do feed
+        Intent downloadService = new Intent(getApplicationContext(), DownloadXmlRssService.class);
+        downloadService.putExtra("url", url);
+        startService(downloadService);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //Registrar o broadcastreceiver dinamico quando o usuario estiver com o app em primeiro plano
+        IntentFilter intentFilter = new IntentFilter(DownloadXmlRssService.DOWNLOAD_COMPLETO);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(onDownloadCompleteEvent, intentFilter);
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //Cancelar o registro do broadcastReceiver
+        LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(onDownloadCompleteEvent);
+    }
+
+    //Evento para quando receber o broadcast.
+    private BroadcastReceiver onDownloadCompleteEvent = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Toast.makeText(getApplicationContext(), "Notícias foram carregadas, exibindo o feed.", Toast.LENGTH_LONG).show();
+            new mostrarFeed().execute();
+        }
+    };
     @Override
     protected void onDestroy() {
         banco.close();
         super.onDestroy();
     }
 
-    private class CarregaRSStask extends AsyncTask<String, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... mudancas) {
-            boolean problema = false;
-            List<ItemRSS> items = null;
-            try {
-                String feed = getRssFeed(mudancas[0]);
-                items = ParserRSS.parse(feed);
-                for (ItemRSS i : items) {
-                    Log.d("banco", "Buscar no Banco por link: " + i.getLink());
-                    ItemRSS item = banco.getItemRSS(i.getLink());
-                    if (item == null) {
-                        Log.d("banco", "Encontrado pela primeira vez: " + i.getTitle());
-                        banco.insertItem(i);
-                    }
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-                problema = true;
-            } catch (XmlPullParserException e) {
-                e.printStackTrace();
-                problema = true;
-            }
-            return problema;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean problemaConfirmado) {
-            if (problemaConfirmado) {
-                Toast.makeText(MainActivity.this, "Teve algum problema ao carregar o feed.", Toast.LENGTH_SHORT).show();
-            } else {
-                //dispara o task que exibe a lista
-                new mostrarFeed().execute();
-            }
-        }
-    }
+//    private class CarregaRSStask extends AsyncTask<String, Void, Boolean> {
+//
+//        @Override
+//        protected Boolean doInBackground(String... mudancas) {
+//            boolean problema = false;
+//            List<ItemRSS> items = null;
+//            try {
+//                String feed = getRssFeed(mudancas[0]);
+//                items = ParserRSS.parse(feed);
+//                for (ItemRSS i : items) {
+//                    Log.d("banco", "Buscar no Banco por link: " + i.getLink());
+//                    ItemRSS item = banco.getItemRSS(i.getLink());
+//                    if (item == null) {
+//                        Log.d("banco", "Encontrado pela primeira vez: " + i.getTitle());
+//                        banco.insertItem(i);
+//                    }
+//                }
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                problema = true;
+//            } catch (XmlPullParserException e) {
+//                e.printStackTrace();
+//                problema = true;
+//            }
+//            return problema;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Boolean problemaConfirmado) {
+//            if (problemaConfirmado) {
+//                Toast.makeText(MainActivity.this, "Teve algum problema ao carregar o feed.", Toast.LENGTH_SHORT).show();
+//            } else {
+//                //dispara o task que exibe a lista
+//                new mostrarFeed().execute();
+//            }
+//        }
+//    }
 
     private class mostrarFeed extends AsyncTask<Void, Void, List<ItemRSS>> {
 
@@ -162,32 +196,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Opcional - pesquise outros meios de obter arquivos da internet
-    private String getRssFeed(String feed) throws IOException {
-        InputStream in = null;
-        String rssFeed = "";
-        try {
-            URL url = new URL(feed);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            in = conn.getInputStream();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            for (int count; (count = in.read(buffer)) != -1; ) {
-                out.write(buffer, 0, count);
-            }
-            byte[] response = out.toByteArray();
-            rssFeed = new String(response, "UTF-8");
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-        return rssFeed;
-    }
 
     //mudança do feed
     public void mudarFeed(View view) {
-        Intent intent = new Intent(this, PreferenciasActivity.class);
+        Intent intent = new Intent(MainActivity.this, PreferenciasActivity.class);
         startActivity(intent);
     }
 }

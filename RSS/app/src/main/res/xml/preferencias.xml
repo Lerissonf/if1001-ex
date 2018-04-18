@@ -3,8 +3,16 @@
     <ListPreference
         android:key="feed_list"
         android:title="@string/button_toolbar"
-        android:summary="Selecione o tipo de rss feed para visualização"
+        android:summary="Selecione o tipo de rss feed para visualização."
         android:entries="@array/feeds"
         android:entryValues="@array/feed_links"
         android:defaultValue="@string/rss_feed_default"/>
+    <ListPreference
+        android:defaultValue="@string/tempo_padrao_atualizacao"
+        android:title="Tempo de recarregamento do feed"
+        android:summary="Selecione o tempo para recarregamento do feed."
+        android:key="rssrefreshtime"
+        android:entries="@array/feed_time"
+        android:entryValues="@array/feed_time"/>
+
 </PreferenceScreen>

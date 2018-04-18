@@ -66,5 +66,5 @@ Para entregar o exercício, responda o [formulário de entrega](https://docs.goo
 | 13 | **sim** |
 | 14 | **sim** |
 | 15 | **sim** |
-| 16 | **não** |
-| 17 | **não** |
+| 16 | **sim** |
+| 17 | **não** (opcional)|

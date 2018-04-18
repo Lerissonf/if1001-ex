@@ -27,6 +27,8 @@ public class DownloadXmlRssService extends IntentService {
     SQLiteRSSHelper banco;
     //Mensagem do broadcast para ser usada no itent de escuta (filter)
     public static final String DOWNLOAD_COMPLETO = "br.ufpe.cin.if1001.rss.action.DOWNLOAD_COMPLETO";
+    ////Mensagem do broadcast para ser usada só quando houver uma nova notícia
+    public static final String NEW_REPORT = "br.ufpe.cin.if1001.rss.NEW_REPORT";
 
     public DownloadXmlRssService() {
         super("DownloadXmlRssService");
@@ -44,6 +46,7 @@ public class DownloadXmlRssService extends IntentService {
                 Log.d("banco", "Buscar no Banco por link: " + i.getLink());
                 ItemRSS item = banco.getItemRSS(i.getLink());
                 if (item == null) {
+                    sendBroadcast(new Intent(NEW_REPORT));
                     Log.d("banco", "Encontrado pela primeira vez: " + i.getTitle());
                     banco.insertItem(i);
                 }

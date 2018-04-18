@@ -12,7 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <service android:name=".ServiceTest.DownloadXmlRssService" android:enabled="true"/>
+        <service
+            android:name=".ServiceTest.DownloadXmlRssService"
+            android:enabled="true" />
+        <receiver
+            android:name=".receiver.NewReportReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="br.ufpe.cin.if1001.rss.NEW_REPORT" />
+            </intent-filter>
+        </receiver>
 
         <activity android:name=".ui.MainActivity">
             <intent-filter>

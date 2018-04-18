@@ -95,7 +95,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
 
 
     public ItemRSS getItemRSS(String link) throws SQLException {
-        SQLiteDatabase banco = getReadableDatabase();
+        SQLiteDatabase banco = db.getReadableDatabase();
         String selection = ITEM_LINK + " = ?";
         String selectionArgs[] = {link};
         Cursor cursorGetItens = banco.query(DATABASE_TABLE,
@@ -120,7 +120,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
 
     public List<ItemRSS> getItems() throws SQLException {
 
-            SQLiteDatabase banco = getReadableDatabase();
+            SQLiteDatabase banco = db.getReadableDatabase();
 
             String selection = ITEM_UNREAD + " = ?";
             String selectionArgs[] = {"1"};
@@ -156,7 +156,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
 
     public boolean markAsUnread(String link) {
 
-        SQLiteDatabase banco = getReadableDatabase();
+        SQLiteDatabase banco = db.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ITEM_UNREAD, 1);
 
@@ -174,7 +174,7 @@ public class SQLiteRSSHelper extends SQLiteOpenHelper {
     }
 
     public boolean markAsRead(String link) {
-        SQLiteDatabase banco = getReadableDatabase();
+        SQLiteDatabase banco =db.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(ITEM_UNREAD, 0);
 

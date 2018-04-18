@@ -1,14 +1,12 @@
 package br.ufpe.cin.if1001.rss.ui;
-import br.ufpe.cin.if1001.rss.R;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -18,12 +16,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import android.content.SharedPreferences;
-
 import java.util.List;
+
+import br.ufpe.cin.if1001.rss.R;
+import br.ufpe.cin.if1001.rss.ServiceTest.DownloadXmlRssService;
 import br.ufpe.cin.if1001.rss.db.SQLiteRSSHelper;
 import br.ufpe.cin.if1001.rss.domain.ItemRSS;
-import br.ufpe.cin.if1001.rss.ServiceTest.DownloadXmlRssService;
 import br.ufpe.cin.if1001.rss.util.CustomAdapter;
 
 public class MainActivity extends AppCompatActivity {

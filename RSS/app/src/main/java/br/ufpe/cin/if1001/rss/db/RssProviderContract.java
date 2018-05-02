@@ -13,8 +13,7 @@ public class RssProviderContract {
     public static final String LINK = "guid";
     public static final String UNREAD = "unread";
     public static final String ITEMS_TABLE = "items";
-
-
+    public static final Uri CONTENT_NEWS_URI = Uri.withAppendedPath(Uri.parse("content://br.ufpe.cin.if710.sqlprovider/"), SQLiteRSSHelper.DATABASE_TABLE);
     public final static String[] ALL_COLUMNS = {
             _ID, TITLE, DATE, DESCRIPTION, LINK, UNREAD};
 

@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         banco = SQLiteRSSHelper.getInstance(this);
+
+        //parte que define o jobScheduler
+        jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+
         //use ListView ao invés de TextView - deixe o ID no layout XML com o mesmo nome conteudoRSS
         //isso vai exigir o processamento do XML baixado da internet usando o ParserRSS
         //adição da tollbar
@@ -83,52 +87,52 @@ public class MainActivity extends AppCompatActivity {
 //                    }
 //                editor.apply();
         //carregando as preferencias do arquivo xml
-        PreferenceManager.setDefaultValues(this, R.xml.preferencias, false);
-        sharedPreferencesJob = PreferenceManager.getDefaultSharedPreferences(this);
-        String job = sharedPreferencesJob.getString(PreferenciasActivity.KEY_PREF_JOB_SCHEDULER, "");
-
-        Log.d("job",job);
-
-        //parte que define o jobScheduler
-        jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-        JobInfo.Builder b = new JobInfo.Builder(JOB_ID, new ComponentName(this, DownloadJobService.class));
-        PersistableBundle pb=new PersistableBundle();
-        pb.putBoolean(KEY_DOWNLOAD, true);
-        b.setExtras(pb);
-        //criterio de rede
-        b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
-        switch (job){
-            case "4000":
-                b.setPeriodic(4000);
-                Log.d("job1",job);
-                break;
-            case "1800000":
-                b.setPeriodic(1800000);
-                Log.d("job12",job);
-                break;
-            case "3600000":
-                b.setPeriodic(3600000);
-                Log.d("job13",job);
-                break;
-            case "10800000":
-                b.setPeriodic(10800000);
-                Log.d("job14",job);
-                break;
-            case "21600000":
-                b.setPeriodic(21600000);
-                Log.d("job15",job);
-                break;
-            case "43200000":
-                b.setPeriodic(43200000);
-                Log.d("job16",job);
-                break;
-            case "86400000":
-                b.setPeriodic(86400000);
-                Log.d("job17",job);
-                break;
-        }
-
-        jobScheduler.schedule(b.build());
+//        PreferenceManager.setDefaultValues(this, R.xml.preferencias, false);
+//        sharedPreferencesJob = PreferenceManager.getDefaultSharedPreferences(this);
+//        String job = sharedPreferencesJob.getString(PreferenciasActivity.KEY_PREF_JOB_SCHEDULER, "");
+//
+//        Log.d("job",job);
+//
+//        //parte que define o jobScheduler
+//        jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+//        JobInfo.Builder b = new JobInfo.Builder(JOB_ID, new ComponentName(this, DownloadJobService.class));
+//        PersistableBundle pb=new PersistableBundle();
+//        pb.putBoolean(KEY_DOWNLOAD, true);
+//        b.setExtras(pb);
+//        //criterio de rede
+//        b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
+//        switch (job){
+//            case "4000":
+//                b.setPeriodic(4000);
+//                Log.d("job1",job);
+//                break;
+//            case "1800000":
+//                b.setPeriodic(1800000);
+//                Log.d("job12",job);
+//                break;
+//            case "3600000":
+//                b.setPeriodic(3600000);
+//                Log.d("job13",job);
+//                break;
+//            case "10800000":
+//                b.setPeriodic(10800000);
+//                Log.d("job14",job);
+//                break;
+//            case "21600000":
+//                b.setPeriodic(21600000);
+//                Log.d("job15",job);
+//                break;
+//            case "43200000":
+//                b.setPeriodic(43200000);
+//                Log.d("job16",job);
+//                break;
+//            case "86400000":
+//                b.setPeriodic(86400000);
+//                Log.d("job17",job);
+//                break;
+//        }
+//
+//        jobScheduler.schedule(b.build());
 
     }
 
@@ -137,13 +141,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         //carregamento default
         //new CarregaRSStask().execute(RSS_FEED);
         //sharedPreference
         //new CarregaRSStask().execute(sharedPreferences.getString(getString(R.string.rss_feed),getString(R.string.rss_feed_default)));
         //mudança do usuario atraves de settings
-//        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        String url = sharedPreferences.getString(PreferenciasActivity.KEY_PREF_RSS_FEED, "");
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String url = sharedPreferences.getString(PreferenciasActivity.KEY_PREF_RSS_FEED, "");
+        //Criar intent para iniciar o servico de download do feed
+        Intent downloadService = new Intent(getApplicationContext(), DownloadXmlRssService.class);
+        downloadService.putExtra("url", url);
+        startService(downloadService);
 //        if(aux == null){
 //            aux = url;
 //        }
@@ -167,9 +176,9 @@ public class MainActivity extends AppCompatActivity {
         //criterio de rede
         b.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
         switch (job){
-            case "4000":
-                b.setPeriodic(4000);
-                Log.d("job1",job);
+            case "900000":
+                b.setPeriodic(900000);
+                Log.d("job12",job);
                 break;
             case "1800000":
                 b.setPeriodic(1800000);
@@ -206,8 +215,7 @@ public class MainActivity extends AppCompatActivity {
 //        downloadService.putExtra("url", url);
 //        startService(downloadService);
     }
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
     @Override
     protected void onResume() {
         super.onResume();

@@ -82,7 +82,7 @@ Para entregar o exercício, responda o [formulário de entrega](https://docs.goo
 | 15 | **sim** |
 | 16 | **sim** |
 | 17 | **não** (opcional)|
-| 18 | **sim** |(em parte)
+| 18 | **sim** |
 | 19 | **não** |
 | 20 | **não** |
 | 21 | **não** |

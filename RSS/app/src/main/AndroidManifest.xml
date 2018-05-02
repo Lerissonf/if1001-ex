@@ -23,7 +23,7 @@
 
         <provider
                     android:name=".db.RssProvider"
-                    android:authorities="bbr.ufpe.cin.if1001.rss.leitura"
+                    android:authorities="br.ufpe.cin.if1001.rss.leitura"
                     android:enabled="true"
                     android:exported="true"></provider>
 

@@ -13,6 +13,6 @@
         android:summary="Selecione o tempo para recarregamento do feed."
         android:key="rssrefreshtime"
         android:entries="@array/feed_time"
-        android:entryValues="@array/feed_time"/>
+        android:entryValues="@array/feed_times_values"/>
 
 </PreferenceScreen>

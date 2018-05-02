@@ -15,6 +15,11 @@
         <service
             android:name=".ServiceTest.DownloadXmlRssService"
             android:enabled="true" />
+        <service
+            android:name=".ServiceTest.DownloadJobService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <receiver
             android:name=".receiver.NewReportReceiver"
             android:enabled="true"

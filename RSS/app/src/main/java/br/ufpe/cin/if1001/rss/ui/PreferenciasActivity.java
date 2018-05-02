@@ -12,6 +12,7 @@ public class PreferenciasActivity extends PreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String KEY_PREF_RSS_FEED = "feed_list";
+    public static final String KEY_PREF_JOB_SCHEDULER = "rssrefreshtime";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +28,10 @@ public class PreferenciasActivity extends PreferenceActivity
         if (key.equals(KEY_PREF_RSS_FEED)) {
             Preference feedPreference = findPreference(key);
             feedPreference.setSummary(sharedPreferences.getString(key, ""));
+        }
+        else if (key.equals(KEY_PREF_JOB_SCHEDULER)) {
+            Preference jobSchedulerPreference = findPreference(key);
+            jobSchedulerPreference.setSummary(sharedPreferences.getString(key, ""));
         }
     }
 
